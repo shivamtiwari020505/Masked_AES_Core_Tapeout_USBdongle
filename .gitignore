@@ -1,0 +1,31 @@
+# Simulation/build outputs
+*.vcd
+*.vvp
+*.fst
+*.log
+results.xml
+sim_build/
+test/sim_build/
+test/results.xml
+test/gate_level_netlist.v
+
+# Python caches
+__pycache__/
+.pytest_cache/
+*.pyc
+
+# Generated vectors/artifacts
+vectors.txt
+*.npy
+*.npz
+*.png
+
+# Yosys/OpenLane generated outputs
+reports/
+synth/*.v
+synth/*.json
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+*~

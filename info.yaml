@@ -1,0 +1,42 @@
+project:
+  title: "Serialized Masked AES Round Core"
+  author: "Shiii"
+  discord: ""
+  description: "Area-reduced Tiny Tapeout wrapper for a two-share masked AES datapath using one serialized masked S-box and externally supplied AES-128 round keys."
+  language: "SystemVerilog"
+  clock_hz: 20000000
+  tiles: "2x2"
+  top_module: "tt_um_masked_aes_round_only"
+  # repo: "https://github.com/<your-user>/<your-repo>"
+  # wokwi_id: 0
+  source_files:
+    - "masked_sbox.sv"
+    - "masked_aes_round_only.sv"
+
+pinout:
+  ui[0]: "Serialized input byte bit 0"
+  ui[1]: "Serialized input byte bit 1"
+  ui[2]: "Serialized input byte bit 2"
+  ui[3]: "Serialized input byte bit 3"
+  ui[4]: "Serialized input byte bit 4"
+  ui[5]: "Serialized input byte bit 5"
+  ui[6]: "Serialized input byte bit 6"
+  ui[7]: "Serialized input byte bit 7"
+  uo[0]: "Serialized output byte bit 0"
+  uo[1]: "Serialized output byte bit 1"
+  uo[2]: "Serialized output byte bit 2"
+  uo[3]: "Serialized output byte bit 3"
+  uo[4]: "Serialized output byte bit 4"
+  uo[5]: "Serialized output byte bit 5"
+  uo[6]: "Serialized output byte bit 6"
+  uo[7]: "Serialized output byte bit 7"
+  uio[0]: "start input / done output"
+  uio[1]: "mask/randomness bit 1"
+  uio[2]: "mask/randomness bit 2"
+  uio[3]: "mask/randomness bit 3"
+  uio[4]: "mask/randomness bit 4"
+  uio[5]: "mask/randomness bit 5"
+  uio[6]: "mask/randomness bit 6"
+  uio[7]: "mask/randomness bit 7"
+
+yaml_version: 6

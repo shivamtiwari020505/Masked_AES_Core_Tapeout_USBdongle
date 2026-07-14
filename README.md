@@ -1,0 +1,192 @@
+![](../../workflows/gds/badge.svg) ![](../../workflows/test/badge.svg)
+
+# Serialized Masked AES Round Core
+
+This Tiny Tapeout project implements an area-reduced AES-128 encryption datapath
+with a two-share masked SubBytes stage. The submitted top module is
+`tt_um_masked_aes_round_only` and is configured for a `2x2` Tiny Tapeout tile
+allocation.
+
+## What is Tiny Tapeout?
+
+Tiny Tapeout is an educational open silicon flow for manufacturing small digital
+and mixed-signal designs. This repository follows the Tiny Tapeout Verilog
+template structure: source files are under `src/`, project metadata is in
+`info.yaml`, and cocotb tests are under `test/`.
+
+## How it works
+
+The design is not a standalone AES peripheral with an internal key schedule.
+Instead, it is a serialized AES-128 encryption datapath that accepts all
+precomputed round keys from an external controller. This removes the AES key
+expander and keeps the design small enough for a `2x2` Tiny Tapeout submission.
+
+The AES state is stored as two Boolean shares:
+
+```text
+x = x0 XOR x1
+```
+
+During plaintext loading, `uio_in[7:0]` supplies the initial state mask `x0`,
+and `ui_in[7:0]` supplies the plaintext byte. The core stores:
+
+```text
+state0 = mask
+state1 = plaintext XOR mask
+```
+
+The `masked_sbox` module implements a two-share DOM-style Boolean masked S-box.
+XOR and affine operations are applied independently to the two shares. The
+nonlinear S-box operations are evaluated with randomized share-domain AND
+gadgets. For the Tiny Tapeout pin budget, `mask_in[7:0]` is used as the external
+fresh randomness input to the S-box wrapper. This is enough for deterministic
+functional testing, but production side-channel claims require true fresh
+randomness, no reuse across S-box evaluations, and post-layout leakage testing.
+
+All AES linear operations remain in the share domain. ShiftRows is folded into
+the SubBytes writeback order, MixColumns is computed on shares, and AddRoundKey
+XORs the externally streamed round-key byte into share 1.
+
+### IO serialization protocol
+
+All byte streams use FIPS-197 column-major state order.
+
+| Signal | Direction | Meaning |
+| --- | --- | --- |
+| `clk` | input | Tiny Tapeout project clock |
+| `rst_n` | input | Active-low synchronous reset |
+| `ena` | input | Tiny Tapeout project select enable |
+| `ui_in[7:0]` | input | Plaintext bytes and precomputed round-key bytes |
+| `uo_out[7:0]` | output | Ciphertext bytes |
+| `uio_in[7:0]` | input | Start pulse, plaintext masks, and S-box randomness |
+| `uio_out[0]` | output | `done` pulse with the last ciphertext byte |
+| `uio_oe[0]` | output | Output enable for `uio_out[0]`; other `uio` pins are inputs |
+
+Transaction sequence:
+
+1. Hold `rst_n=0` for reset, then release with `ena=1`.
+2. Pulse `uio_in[0]=1` for one clock while in idle. `ui_in` is ignored.
+3. Drive 16 plaintext bytes on `ui_in`; drive the 16 corresponding state masks
+   on `uio_in`.
+4. Drive round key 0, 16 bytes on `ui_in`.
+5. For each AES round 1 through 10:
+   - for each state byte, drive one S-box issue cycle with fresh randomness on
+     `uio_in`, then one S-box capture cycle;
+   - drive that round's 16-byte round key on `ui_in`.
+6. Read 16 ciphertext bytes from `uo_out`. `uio_out[0]` is high only with byte
+   15.
+
+## How to test
+
+The included cocotb test runs the FIPS-197 AES-128 known-answer vector:
+
+```text
+key        = 000102030405060708090a0b0c0d0e0f
+plaintext  = 00112233445566778899aabbccddeeff
+ciphertext = 69c4e0d86a7b0430d8cdb78070b4c55a
+```
+
+For a deterministic functional test, use all-zero plaintext masks and all-zero
+S-box randomness. This is not a valid side-channel security configuration; it is
+only a reproducible KAT.
+
+After reset, drive this exact active `ui_in` payload stream. During the S-box
+issue/capture cycles, drive `ui_in=00`; those idle `ui_in` cycles are not shown
+in the payload list below.
+
+Complete cycle grouping after reset release:
+
+| Cycle group | `ui_in` | `uio_in` |
+| --- | --- | --- |
+| 1 start cycle | `00` | `01` |
+| 16 plaintext cycles | plaintext byte stream below | `00` mask bytes for this deterministic KAT |
+| 16 initial-key cycles | round key 0 below | `00` |
+| For each round 1..10: 32 S-box cycles | `00` on every cycle | `00` randomness for this deterministic KAT |
+| For each round 1..10: 16 round-key cycles | that round key below | `00` |
+| 16 output cycles | `00` | `00`; sample `uo_out` |
+
+```text
+Plaintext:
+00 11 22 33 44 55 66 77 88 99 aa bb cc dd ee ff
+
+Round key 0:
+00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f
+
+Round key 1:
+d6 aa 74 fd d2 af 72 fa da a6 78 f1 d6 ab 76 fe
+
+Round key 2:
+b6 92 cf 0b 64 3d bd f1 be 9b c5 00 68 30 b3 fe
+
+Round key 3:
+b6 ff 74 4e d2 c2 c9 bf 6c 59 0c bf 04 69 bf 41
+
+Round key 4:
+47 f7 f7 bc 95 35 3e 03 f9 6c 32 bc fd 05 8d fd
+
+Round key 5:
+3c aa a3 e8 a9 9f 9d eb 50 f3 af 57 ad f6 22 aa
+
+Round key 6:
+5e 39 0f 7d f7 a6 92 96 a7 55 3d c1 0a a3 1f 6b
+
+Round key 7:
+14 f9 70 1a e3 5f e2 8c 44 0a df 4d 4e a9 c0 26
+
+Round key 8:
+47 43 87 35 a4 1c 65 b9 e0 16 ba f4 ae bf 7a d2
+
+Round key 9:
+54 99 32 d1 f0 85 57 68 10 93 ed 9c be 2c 97 4e
+
+Round key 10:
+13 11 1d 7f e3 94 4a 17 f3 07 a7 8b 4d 2b 30 c5
+```
+
+Expected `uo_out` sequence:
+
+```text
+69 c4 e0 d8 6a 7b 04 30 d8 cd b7 80 70 b4 c5 5a
+```
+
+Run the RTL test locally:
+
+```sh
+cd test
+make -B
+```
+
+Run gate-level simulation after the Tiny Tapeout GDS action produces and copies
+`gate_level_netlist.v` into `test/`:
+
+```sh
+cd test
+make -B GATES=yes
+```
+
+Run the synthesis feasibility check:
+
+```sh
+python3 check_synth.py --top tt_um_masked_aes_round_only --rtl src/masked_sbox.sv src/masked_aes_round_only.sv
+```
+
+## External hardware
+
+No external components are required for RTL or gate-level simulation.
+
+For testing real silicon, use:
+
+- a Tiny Tapeout demoboard or compatible ASIC test setup;
+- a controller capable of streaming byte-serial `ui_in` and `uio_in` values;
+- a stable Tiny Tapeout clock and reset source;
+- a true random byte source for `uio_in[7:0]` during S-box issue cycles if
+  side-channel masking behavior is being evaluated;
+- optional side-channel capture equipment, such as ChipWhisperer, for TVLA/CPA
+  experiments.
+
+## Security status
+
+This project is a masked AES research demonstrator. The RTL structure avoids
+intentional unmasked SubBytes intermediates, but a production security claim
+requires a real randomness source, no randomness reuse, constrained synthesis and
+layout, gate-level/post-layout review, and leakage validation such as TVLA.

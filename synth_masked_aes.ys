@@ -1,0 +1,25 @@
+#------------------------------------------------------------------------------
+# synth_masked_aes.ys
+#
+# Generic Yosys synthesis for masked_aes_core. This produces a rough
+# technology-independent cell-count report for comparison against aes_core.
+#
+# Security note: this generic synthesis run is only an area sanity check. Do
+# not treat it as masking-safe implementation signoff. A production masked flow
+# still needs masking-aware synthesis constraints, hierarchy/domain preservation,
+# layout review, and TVLA/leakage validation.
+#------------------------------------------------------------------------------
+
+read_verilog -sv -DYOSYS masked_sbox.sv masked_aes_core.sv
+
+hierarchy -check -top masked_aes_core
+setattr -mod -set keep_hierarchy 1 masked_sbox
+setattr -mod -set keep_hierarchy 1 masked_aes_core
+check -assert
+
+synth -top masked_aes_core
+opt_clean
+
+tee -o reports/masked_aes_core_stat.txt stat -top masked_aes_core
+write_verilog -noattr synth/masked_aes_core_generic.v
+write_json synth/masked_aes_core_generic.json

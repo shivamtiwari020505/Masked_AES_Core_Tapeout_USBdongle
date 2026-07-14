@@ -1,0 +1,20 @@
+#------------------------------------------------------------------------------
+# synth_aes_core.ys
+#
+# Generic Yosys synthesis for the unmasked AES-128 core. This produces a rough
+# technology-independent cell-count report for comparison. It is not a final
+# ASIC area number unless you replace the generic flow with a standard-cell
+# liberty-based mapping flow.
+#------------------------------------------------------------------------------
+
+read_verilog -sv -DYOSYS aes_core.sv
+
+hierarchy -check -top aes_core
+check -assert
+
+synth -top aes_core
+opt_clean
+
+tee -o reports/aes_core_stat.txt stat -top aes_core
+write_verilog -noattr synth/aes_core_generic.v
+write_json synth/aes_core_generic.json
