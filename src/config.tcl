@@ -10,9 +10,6 @@ set ::env(MAX_FANOUT_CONSTRAINT) 8
 set ::env(SYNTH_MAX_FANOUT) 8
 set ::env(SYNTH_STRATEGY) "AREA 0"
 set ::env(RT_MAX_LAYER) "met4"
-set ::env(FP_PDN_HORIZONTAL_LAYER) "met4"
-set ::env(FP_PDN_VERTICAL_LAYER) "met3"
-set ::env(RUN_FILL_INSERTION) 0
 
 # No scan insertion for this side-channel-sensitive masked datapath.
 set ::env(RUN_DFT) 0
