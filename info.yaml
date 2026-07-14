@@ -7,7 +7,7 @@ project:
   clock_hz: 20000000
   tiles: "2x2"
   top_module: "tt_um_masked_aes_round_only"
-  # repo: "https://github.com/<your-user>/<your-repo>"
+  repo: "https://github.com/shivamtiwari020505/Masked_AES_Core_Tapeout_USBdongle"
   # wokwi_id: 0
   source_files:
     - "masked_sbox.sv"
