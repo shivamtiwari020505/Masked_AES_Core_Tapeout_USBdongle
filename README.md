@@ -1,11 +1,24 @@
-![](../../workflows/gds/badge.svg) ![](../../workflows/test/badge.svg)
-
 # Serialized Masked AES Round Core
+
+[![GDS](https://github.com/shivamtiwari020505/Masked_AES_Core_Tapeout_USBdongle/actions/workflows/gds.yml/badge.svg?branch=main)](https://github.com/shivamtiwari020505/Masked_AES_Core_Tapeout_USBdongle/actions/workflows/gds.yml)
+[![GDS Viewer](https://img.shields.io/badge/GDS-Open%20interactive%20viewer-1f6feb)](https://shivamtiwari020505.github.io/Masked_AES_Core_Tapeout_USBdongle/)
 
 This Tiny Tapeout project implements an area-reduced AES-128 encryption datapath
 with a two-share masked SubBytes stage. The submitted top module is
 `tt_um_masked_aes_round_only` and is configured for a `2x2` Tiny Tapeout tile
 allocation.
+
+- Top module: `tt_um_masked_aes_round_only`
+- Target shuttle: Tiny Tapeout 6 / Sky130A
+- Clock: 20 MHz
+- Tile size: `2x2`
+- GDS status: hardening, gate-level test, and precheck passing
+
+## GDS and layout
+
+- [Open the interactive Tiny Tapeout GDS viewer](https://shivamtiwari020505.github.io/Masked_AES_Core_Tapeout_USBdongle/)
+- [View the latest GDS workflow](https://github.com/shivamtiwari020505/Masked_AES_Core_Tapeout_USBdongle/actions/workflows/gds.yml)
+- Published viewer model: `tinytapeout.gds.gltf`
 
 ## What is Tiny Tapeout?
 
