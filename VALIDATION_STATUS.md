@@ -5,6 +5,8 @@ Updated: 2026-07-17
 No physical side-channel experiment has been completed for this project. The
 previous draft report described a ChipWhisperer campaign as if it had happened;
 that text was removed because no trace data or completed result exists.
+[Measurement Readiness](MEASUREMENT_READINESS.md) records the missing target
+adapter, acquisition metadata, raw-data, and analysis-evidence requirements.
 
 ## Reproduced functional results
 
@@ -27,13 +29,18 @@ Tapeout regressions. Exact vector and log artifacts are retained per workflow
 run. Deterministic generation supports reproducibility; it is not a model for a
 security randomness source.
 
+The CPA and Welch t-test utilities also have deterministic tests using
+constructed numerical data. Those tests catch analysis-code regressions only;
+they are not measurements, leakage simulations, or security results for the
+RTL.
+
 ## Physical implementation evidence
 
-A previous TT06-compatible GitHub workflow completed GDS hardening, precheck,
-gate-level simulation, and viewer generation for the serialized Tiny Tapeout
-wrapper. The repository now targets the current TTSKY26c flow; evidence for a
-release must reference a successful workflow on that exact commit. No shuttle
-submission or fabricated device exists.
+The GitHub `gds` workflow targets the current TTSKY26c flow and runs GDS
+hardening, Tiny Tapeout precheck, gate-level simulation, and viewer generation
+for the serialized wrapper. Evidence for a release must reference a successful
+workflow on that exact commit. No shuttle submission or fabricated device
+exists.
 
 ## Missing security evidence
 

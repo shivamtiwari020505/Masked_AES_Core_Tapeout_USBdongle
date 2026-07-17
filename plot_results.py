@@ -2,7 +2,7 @@
 """Plot CPA correlation traces and attack convergence.
 
 Install:
-    python3 -m pip install chipwhisperer numpy matplotlib
+    python3 -m pip install numpy matplotlib
 
 Typical use:
     python3 plot_results.py --key 000102030405060708090a0b0c0d0e0f

@@ -45,7 +45,8 @@ production-ready:
 4. Replace the demonstration masking network with an implementation supported
    by a stated security model and independent review.
 5. Complete FPGA or post-layout leakage work before tapeout, followed by
-   measured bring-up and leakage testing on the fabricated proof device.
+   measured bring-up and leakage testing on the fabricated proof device under
+   the evidence controls in [MEASUREMENT_READINESS.md](MEASUREMENT_READINESS.md).
 6. Produce versioned RTL, integration guide, verification evidence, PPA data,
    release notes, known limitations, and reproducible build scripts.
 7. Have qualified counsel prepare the evaluation and production licence,

@@ -63,6 +63,9 @@ jobs:
       - name: Install test dependencies
         run: pip install -r test/requirements.txt
 
+      - name: Test analysis utilities
+        run: pytest -q analysis_tests --junitxml=analysis-tests.xml
+
       - name: Generate deterministic test corpus
         run: |
           python gen_vectors.py --seed 20260717
@@ -88,3 +91,4 @@ jobs:
             masked_sim.log
             dom32_run.log
             dom32_iverilog.log
+            analysis-tests.xml

@@ -2,7 +2,7 @@
 """Generate the unmasked-vs-masked CPA comparison figure.
 
 Install:
-    python3 -m pip install chipwhisperer numpy matplotlib
+    python3 -m pip install numpy matplotlib
 
 Required inputs:
     unmasked_correlation_peaks.npy

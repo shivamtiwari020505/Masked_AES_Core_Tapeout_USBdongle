@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
-"""Capture unmasked AES traces from a CW305 target.
+"""Generic CW305 AES acquisition utility; not a project target adapter.
+
+The repository does not include a CW305 top level or bitstream for this RTL,
+and this utility cannot drive the Tiny Tapeout wrapper's serialized protocol.
+It has not produced validation evidence for this project. Use it only with an
+identified AES-compatible CW305 wrapper and record that wrapper separately.
 
 Install:
-    python3 -m pip install chipwhisperer numpy matplotlib
+    python3 -m pip install chipwhisperer numpy pycryptodome
 
 Typical use:
     python3 capture.py path/to/cw305_aes.bit --num-traces 5000 --samples 5000
@@ -11,10 +16,9 @@ This script supports two common CW305 AES wrappers:
   * --interface cw305: uses target.loadInput(), target.go(), target.readOutput()
   * --interface simpleserial: uses SimpleSerial 'p' plaintext and 'r' ciphertext
 
-The requested chipwhisperer.common.results.glitch import is attempted below for
-compatibility with older ChipWhisperer notebook environments. Actual capture
-triggering is done through the normal ChipWhisperer hardware path:
-scope.trigger.triggers, scope.arm(), target start, scope.capture().
+Every captured ciphertext is checked against software AES when --key is
+provided. A capture without that functional check is acquisition scaffolding,
+not a verification result.
 """
 
 from __future__ import annotations
@@ -52,13 +56,8 @@ def connect_and_program(args: argparse.Namespace):
     except ImportError as exc:
         raise SystemExit(
             "Missing ChipWhisperer. Install with:\n"
-            "  python3 -m pip install chipwhisperer numpy matplotlib"
+            "  python3 -m pip install chipwhisperer numpy pycryptodome"
         ) from exc
-
-    try:
-        from chipwhisperer.common.results import glitch as cw_glitch_results  # noqa: F401
-    except Exception:
-        cw_glitch_results = None  # noqa: F841
 
     scope = cw.scope()
     target = cw.target(
@@ -110,21 +109,37 @@ def configure_cw305_target(target, args: argparse.Namespace) -> None:
 
     if args.key is not None:
         key = list(args.key)
+        errors: list[str] = []
         for method_name in ("loadEncryptionKey", "set_key"):
             if hasattr(target, method_name):
-                try:
-                    getattr(target, method_name)(key)
-                    return
-                except TypeError:
-                    getattr(target, method_name)(bytearray(args.key))
-                    return
-                except Exception:
-                    pass
+                for payload in (key, bytearray(args.key)):
+                    try:
+                        getattr(target, method_name)(payload)
+                        return
+                    except Exception as exc:
+                        errors.append(f"{method_name}: {exc}")
 
         if hasattr(target, "simpleserial_write"):
-            target.simpleserial_write("k", bytearray(args.key))
-            if hasattr(target, "simpleserial_wait_ack"):
-                target.simpleserial_wait_ack()
+            try:
+                target.simpleserial_write("k", bytearray(args.key))
+                if hasattr(target, "simpleserial_wait_ack"):
+                    target.simpleserial_wait_ack()
+                return
+            except Exception as exc:
+                errors.append(f"simpleserial key command: {exc}")
+
+        detail = "; ".join(errors) if errors else "no supported key interface"
+        raise RuntimeError(f"could not configure the requested AES key: {detail}")
+
+
+def aes128_encrypt(key: bytes, plaintext: bytes) -> bytes:
+    try:
+        from Crypto.Cipher import AES
+    except ImportError as exc:
+        raise RuntimeError(
+            "--key requires PyCryptodome for per-capture ciphertext checks"
+        ) from exc
+    return AES.new(key, AES.MODE_ECB).encrypt(plaintext)
 
 
 def capture_cw305_native(scope, target, plaintext: bytes, args: argparse.Namespace):
@@ -171,7 +186,9 @@ def capture_one(scope, target, plaintext: bytes, args: argparse.Namespace):
 
 
 def build_argparser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Capture AES traces from CW305")
+    parser = argparse.ArgumentParser(
+        description="Generic CW305 AES capture utility; not a project target adapter"
+    )
     parser.add_argument("bitstream", type=Path, help="CW305 FPGA bitstream path")
     parser.add_argument("-n", "--num-traces", type=int, default=5000)
     parser.add_argument("--samples", type=int, default=5000)
@@ -197,8 +214,26 @@ def build_argparser() -> argparse.ArgumentParser:
     return parser
 
 
+def validate_args(args: argparse.Namespace) -> None:
+    if not args.bitstream.is_file():
+        raise ValueError(f"bitstream does not exist or is not a file: {args.bitstream}")
+    if args.num_traces <= 0:
+        raise ValueError("--num-traces must be positive")
+    if args.samples <= 0:
+        raise ValueError("--samples must be positive")
+    if args.retries < 0:
+        raise ValueError("--retries must not be negative")
+
+
 def main() -> int:
     args = build_argparser().parse_args()
+    validate_args(args)
+    if args.key is None:
+        print(
+            "Warning: --key was not supplied; captured ciphertexts cannot be "
+            "checked against software AES.",
+            file=sys.stderr,
+        )
     args.out_dir.mkdir(parents=True, exist_ok=True)
 
     rng = np.random.default_rng(args.seed)
@@ -216,6 +251,14 @@ def main() -> int:
             for attempt in range(args.retries + 1):
                 try:
                     wave, ciphertext = capture_one(scope, target, plaintext, args)
+                    if args.key is not None:
+                        expected = aes128_encrypt(args.key, plaintext)
+                        actual = bytes(ciphertext)
+                        if actual != expected:
+                            raise RuntimeError(
+                                "ciphertext check failed: "
+                                f"expected={expected.hex()} actual={actual.hex()}"
+                            )
                     break
                 except Exception as exc:
                     last_error = exc

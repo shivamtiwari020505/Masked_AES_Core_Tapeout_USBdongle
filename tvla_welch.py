@@ -9,7 +9,8 @@ Example:
   python3 tvla_welch.py --fixed fixed.csv --random random.csv --out tvla.csv
 
 The script reports the maximum absolute t-statistic and exits non-zero when it
-meets or exceeds the default first-order TVLA threshold of 4.5.
+meets or exceeds the default first-order screening threshold of 4.5. A result
+below that threshold is not a certification or proof of leakage resistance.
 """
 
 from __future__ import annotations
@@ -57,11 +58,14 @@ class OnlineStats:
 def parse_trace_row(row: list[str]) -> list[float] | None:
     if not row:
         return None
-    if row[0].strip().startswith("#"):
+    stripped = [item.strip() for item in row]
+    if stripped[0].startswith("#"):
         return None
-    if all(not item.strip() for item in row):
+    if all(not item for item in stripped):
         return None
-    return [float(item.strip()) for item in row if item.strip()]
+    if any(not item for item in stripped):
+        raise ValueError("trace row contains an empty sample")
+    return [float(item) for item in stripped]
 
 
 def load_stats(path: Path) -> OnlineStats:
@@ -69,7 +73,10 @@ def load_stats(path: Path) -> OnlineStats:
     with path.open("r", encoding="utf-8", newline="") as fin:
         reader = csv.reader(fin)
         for lineno, row in enumerate(reader, start=1):
-            parsed = parse_trace_row(row)
+            try:
+                parsed = parse_trace_row(row)
+            except ValueError as exc:
+                raise ValueError(f"{path}:{lineno}: {exc}") from exc
             if parsed is not None:
                 stats.add(parsed, path, lineno)
     if stats.n < 2:
@@ -127,10 +134,13 @@ def main() -> int:
     print(f"results={args.out}")
 
     if abs(max_t) >= args.threshold:
-        print(f"TVLA FAIL: |t| >= {args.threshold}", file=sys.stderr)
+        print(
+            f"TVLA SCREEN: threshold crossing |t| >= {args.threshold}",
+            file=sys.stderr,
+        )
         return 1
 
-    print(f"TVLA PASS: |t| < {args.threshold}")
+    print(f"TVLA SCREEN: no |t| crossing at threshold {args.threshold}")
     return 0
 
 

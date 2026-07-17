@@ -27,7 +27,9 @@ See [Product Status](PRODUCT_STATUS.md),
 [Masking Implementation Notes](MASKING_IMPLEMENTATION.md) before evaluating
 either implementation. The proposed sellable boundary is defined separately in
 [Commercial Product Requirements](COMMERCIAL_PRODUCT_REQUIREMENTS.md), while
-[Source Provenance](SOURCE_PROVENANCE.md) records the open diligence gate.
+[Source Provenance](SOURCE_PROVENANCE.md) records the open diligence gate and
+[Measurement Readiness](MEASUREMENT_READINESS.md) separates analysis tooling
+from actual device evidence.
 
 ## GDS and layout
 
@@ -231,6 +233,11 @@ For testing real silicon, use:
   side-channel masking behavior is being evaluated;
 - optional side-channel capture equipment, such as ChipWhisperer, for TVLA/CPA
   experiments.
+
+No Tiny Tapeout or FPGA capture adapter for this RTL exists in the repository.
+The generic CW305 utility in `capture.py` cannot drive the serialized Tiny
+Tapeout interface. See [Measurement Readiness](MEASUREMENT_READINESS.md) before
+using or describing any acquisition or analysis script.
 
 ## Security status
 

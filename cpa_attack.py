@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
-"""Correlation Power Analysis attack against first-round AES SubBytes.
+"""Correlation Power Analysis utility for first-round AES SubBytes.
+
+This script has not been run on traces from this project. A recovered key is
+evidence only for the identified trace set and leakage model; non-recovery is
+not evidence that an implementation is secure.
 
 Install:
-    python3 -m pip install chipwhisperer numpy matplotlib
+    python3 -m pip install numpy
 
 Typical use:
     python3 cpa_attack.py --key 000102030405060708090a0b0c0d0e0f
@@ -198,7 +202,7 @@ def run_cpa(
 
 
 def build_argparser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="CPA attack on unmasked AES traces")
+    parser = argparse.ArgumentParser(description="First-round AES CPA utility")
     parser.add_argument("--traces", type=Path, default=Path("traces.npy"))
     parser.add_argument("--plaintexts", type=Path, default=Path("plaintexts.npy"))
     parser.add_argument("--key", type=parse_key, default=None, help="optional true AES key")

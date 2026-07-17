@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
-"""CPA attack script for traces captured from masked_aes_core.
+"""First-round CPA utility for a trace set labelled as masked.
+
+No measured trace set for this project is included. Failure to recover a key
+under this model does not demonstrate masking security; trace count, alignment,
+measurement quality, leakage order, and alternative models still matter.
 
 Install:
-    python3 -m pip install chipwhisperer numpy matplotlib
+    python3 -m pip install numpy
 
 Typical use:
     python3 cpa_attack_masked.py \
@@ -10,9 +14,9 @@ Typical use:
         --plaintexts masked_plaintexts.npy \
         --key 000102030405060708090a0b0c0d0e0f
 
-This intentionally runs the same first-round CPA model used for the unmasked
-core: HW(SBOX[plaintext_byte XOR key_guess]). A correctly masked design should
-not reveal a stable key-dependent correlation under this first-order model.
+This intentionally runs the same first-round model used for the unmasked core:
+HW(SBOX[plaintext_byte XOR key_guess]). The comparison is a single diagnostic,
+not a pass/fail security test.
 """
 
 from __future__ import annotations
@@ -26,7 +30,9 @@ from cpa_attack import key_to_hex, load_inputs, parse_key, run_cpa
 
 
 def build_argparser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="CPA attack on masked AES traces")
+    parser = argparse.ArgumentParser(
+        description="First-round CPA utility for a trace set labelled as masked"
+    )
     parser.add_argument("--traces", type=Path, default=Path("masked_traces.npy"))
     parser.add_argument("--plaintexts", type=Path, default=Path("masked_plaintexts.npy"))
     parser.add_argument("--key", type=parse_key, default=None, help="optional true AES key")
