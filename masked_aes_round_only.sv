@@ -1,7 +1,7 @@
 //------------------------------------------------------------------------------
 // masked_aes_round_only.sv
 //
-// Tiny Tapeout v6 compatible serialized masked AES datapath.
+// TTSKY26c-targeted serialized masked AES datapath.
 //
 // This top strips the AES-128 key schedule and accepts precomputed round keys
 // over an 8-bit serialized interface. It uses one masked_sbox instance reused
@@ -36,7 +36,7 @@
 
 `timescale 1ns/1ps
 
-module tt_um_masked_aes_round_only (
+module tt_um_shivamtiwari020505_masked_aes (
   input  wire [7:0] ui_in,
   output wire [7:0] uo_out,
   input  wire [7:0] uio_in,

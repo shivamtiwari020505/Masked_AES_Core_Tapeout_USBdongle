@@ -1,12 +1,12 @@
 project:
   title: "Serialized Masked AES Round Core"
-  author: "Shiii"
+  author: "Shivam Tiwari"
   discord: ""
-  description: "Area-reduced Tiny Tapeout wrapper for a two-share masked AES datapath using one serialized masked S-box and externally supplied AES-128 round keys."
+  description: "2026 Tiny Tapeout proof-of-concept for a two-share AES-128 round datapath with serialized I/O and externally supplied round keys; physical security validation pending."
   language: "SystemVerilog"
   clock_hz: 20000000
   tiles: "2x2"
-  top_module: "tt_um_masked_aes_round_only"
+  top_module: "tt_um_shivamtiwari020505_masked_aes"
   repo: "https://github.com/shivamtiwari020505/Masked_AES_Core_Tapeout_USBdongle"
   # wokwi_id: 0
   source_files:

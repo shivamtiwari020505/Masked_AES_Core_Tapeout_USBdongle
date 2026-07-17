@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Run a Yosys synthesis feasibility check for the masked AES core.
+Run a rough Yosys synthesis feasibility check for the masked AES core.
 
 Default use:
     python3 check_synth.py
@@ -8,9 +8,10 @@ Default use:
 For a real SKY130 timing estimate, pass a Liberty file from your PDK:
     python3 check_synth.py --liberty $PDK_ROOT/sky130B/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib
 
-The generic no-Liberty mode is useful for fast construct/cell-count checks, but
-critical path delay is only meaningful after mapping to a real standard-cell
-library.
+The generic no-Liberty mode is useful for fast construct and cell-count checks,
+but critical-path delay is only meaningful after mapping to a real
+standard-cell library. Cell count per Tiny Tapeout tile is an approximation;
+the target shuttle's hardening workflow is authoritative for fit.
 """
 
 from __future__ import annotations
@@ -28,7 +29,7 @@ from pathlib import Path
 
 TT_CELLS_PER_TILE_DEFAULT = 1000
 TT_DEFAULT_TARGET_TILES = 2
-TT06_TILE_SHAPES = [
+TT_TILE_SHAPES = [
     (1, "1x1"),
     (2, "1x2"),
     (4, "2x2"),
@@ -64,10 +65,10 @@ def read_target_tiles_from_info_yaml(path: str) -> int | None:
 
 
 def tile_shape_for_count(tile_count: int) -> str:
-    for max_tiles, shape in TT06_TILE_SHAPES:
+    for max_tiles, shape in TT_TILE_SHAPES:
         if tile_count <= max_tiles:
             return shape
-    return "larger than TT06 standard shapes"
+    return "larger than the listed Tiny Tapeout shapes"
 
 
 def find_default_liberty() -> str | None:
@@ -207,10 +208,10 @@ def recommended_tiles(total_cells: int | None, cells_per_tile: int) -> tuple[str
         return "unknown", "cell count was not parsed"
 
     tiles = max(1, math.ceil(total_cells / cells_per_tile))
-    for max_tiles, shape in TT06_TILE_SHAPES:
+    for max_tiles, shape in TT_TILE_SHAPES:
         if tiles <= max_tiles:
             return str(tiles), shape
-    return str(tiles), "does not fit a standard TT06 tile shape; reduce or partition"
+    return str(tiles), "larger than the listed Tiny Tapeout shapes; reduce or partition"
 
 
 def main() -> int:
@@ -273,7 +274,7 @@ def main() -> int:
         if args.top == "masked_aes_core":
             recommendation = (
                 f"full masked_aes_core exceeds the configured {args.target_tiles}-tile "
-                "target; use tt_um_masked_aes_round_only with external round keys"
+                "target; use the serialized Tiny Tapeout wrapper with external round keys"
             )
         else:
             recommendation = (
@@ -288,14 +289,14 @@ def main() -> int:
         "yosys_returncode": returncode,
         "total_cells": total_cells,
         "target_tiles": args.target_tiles,
-        "target_tt06_shape": target_shape,
+        "target_tt_shape": target_shape,
         "target_cells": target_cells,
         "fits_target_tiles": (total_cells is not None and total_cells <= target_cells),
         "critical_path_delay": critical_path or "N/A; pass --liberty for mapped SKY130 timing",
         "unsupported_constructs": unsupported,
         "unmapped_cells": unmapped,
         "recommended_tile_count": tile_count,
-        "recommended_tt06_shape": tile_shape,
+        "recommended_tt_shape": tile_shape,
         "recommendation": recommendation,
     }
 
@@ -309,7 +310,8 @@ def main() -> int:
         f"Fits configured TT target: {summary['fits_target_tiles']}",
         f"Critical path delay: {summary['critical_path_delay']}",
         f"Recommended tile count: {tile_count}",
-        f"Recommended TT06 shape: {tile_shape}",
+        f"Approximate TT shape: {tile_shape}",
+        "Tile-fit note: this estimate is not a substitute for the target hardening flow.",
         f"Recommendation: {recommendation}",
         "",
         "Unsupported constructs / parser issues:",

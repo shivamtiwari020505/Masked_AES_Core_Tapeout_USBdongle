@@ -1,48 +1,52 @@
 # Commercial Licensing
 
-## Licensing model
+## Public release
 
-The original RTL in this repository is available under the Apache License 2.0.
-That licence permits open-source and commercial use subject to its terms.
-Companies that need different contractual terms or additional engineering
-services may negotiate a separate written commercial licence with Shivam
-Tiwari.
+The covered RTL in this public repository is available under Apache 2.0. That
+licence permits commercial use, including use in closed products and fabricated
+chips, subject to its terms. No licence fee or royalty is owed for use solely
+under Apache 2.0, and rights already granted under it are not withdrawn.
 
-A commercial agreement may address:
+## Separate commercial agreement
 
-- use of the covered RTL in a closed product without attribution or Apache
-  redistribution-notice obligations, to the extent contractually granted;
-- negotiated indemnification for specified third-party intellectual-property
-  claims, subject to agreed exclusions and liability limits;
-- delivery of an agreed verification package; and
-- integration support.
+Shivam Tiwari may offer a separate written agreement for identified versions,
+confidential deliverables, or engineering services. Negotiated terms may cover:
 
-These items are not granted or guaranteed by this notice. They apply only when
-included in a signed commercial agreement.
+- no attribution or Apache redistribution-notice obligations for named closed
+  products, where agreed;
+- a contract-defined verification package and integration or process-porting
+  support;
+- support and maintenance service levels; and
+- limited warranties or indemnification for specified intellectual-property
+  claims, subject to agreed exclusions and liability limits.
 
-## Coverage
+Commercial pricing may combine evaluation or production licence fees,
+non-recurring engineering fees, annual support, and a fixed per-chip or
+average-selling-price royalty. This notice creates no payment obligation; only
+a signed agreement does.
 
-A commercial licence may cover specified versions of original RTL owned by
-Shivam Tiwari and rights to integrate, modify, synthesize, manufacture, and
-distribute that RTL within named closed products. The executed agreement
-defines the scope, deliverables, support, indemnity, fees, term, and third-party
-exclusions. Third-party material is not relicensed.
+A signed agreement identifies the RTL release and named products, processes,
+permitted uses, verification deliverables, support, fees, reporting, audit
+rights, term, and third-party exclusions.
 
-## Current technical status
+## Manufacturing responsibility
 
-This 2026 project implements a two-share Boolean-masked AES-128 round core in
-SystemVerilog with a DOM-style masked S-box. It is configured for the Tiny
-Tapeout TT06/Sky130A flow, and the latest main-branch GDS workflow passes. The
-repository includes a FIPS-197 known-answer test and draft masking signoff
-notes. It is not silicon-proven. Measured CPA/TVLA data, completed masking
-signoff, and ChipWhisperer validation are not currently available, so no
-empirical or production side-channel-resistance claim is made.
+The licensee selects and contracts its foundry or design-service partner and is
+responsible for physical implementation, masks, wafers, packaging, test,
+qualification, yield, and shipment. Shivam Tiwari supplies IP and agreed design
+support, not manufactured chips. EUROPRACTICE or foundry partner ecosystems may
+be considered where the customer and process qualify; no affiliation or access
+is guaranteed.
+
+## Current maturity
+
+The public Tiny Tapeout wrapper is a functional demonstrator and has not been
+submitted or fabricated. The DOM32 implementation is a simulation-tested
+candidate without completed physical or side-channel validation. See
+[PRODUCT_STATUS.md](PRODUCT_STATUS.md).
 
 ## Contact
 
-To contact [Shivam Tiwari](https://github.com/shivamtiwari020505) about
-commercial licensing, open a
+Contact [Shivam Tiwari](https://github.com/shivamtiwari020505) by opening a
 [commercial licensing enquiry](https://github.com/shivamtiwari020505/Masked_AES_Core_Tapeout_USBdongle/issues/new?title=Commercial%20licensing%20enquiry).
-GitHub issues are public, so do not include confidential technical or
-commercial information. A private channel can be arranged after the initial
-enquiry.
+Do not include confidential information in a public issue.

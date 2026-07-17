@@ -18,7 +18,7 @@ module tb ();
   wire [7:0] uio_out;
   wire [7:0] uio_oe;
 
-  tt_um_masked_aes_round_only user_project (
+  tt_um_shivamtiwari020505_masked_aes user_project (
 
 `ifdef GL_TEST
       .VPWR(1'b1),

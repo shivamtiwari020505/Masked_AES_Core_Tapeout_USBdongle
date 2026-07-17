@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2026 Shiii
+# SPDX-FileCopyrightText: 2026 Shivam Tiwari
 # SPDX-License-Identifier: Apache-2.0
 
 import cocotb
