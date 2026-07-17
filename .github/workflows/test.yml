@@ -64,7 +64,7 @@ jobs:
         run: pip install -r test/requirements.txt
 
       - name: Test analysis utilities
-        run: pytest -q analysis_tests --junitxml=analysis-tests.xml
+        run: python -m pytest -q analysis_tests --junitxml=analysis-tests.xml
 
       - name: Generate deterministic test corpus
         run: |
