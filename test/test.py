@@ -1,5 +1,5 @@
 # SPDX-FileCopyrightText: 2026 Shiii
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 
 import cocotb
 from cocotb.clock import Clock
