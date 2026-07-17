@@ -3,7 +3,7 @@
 
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import RisingEdge, Timer
+from cocotb.triggers import FallingEdge, RisingEdge
 
 
 PLAINTEXT = [
@@ -99,7 +99,9 @@ async def test_project(dut):
 
     observed = []
     for idx in range(16):
-        await Timer(1, unit="ns")
+        # Sample halfway through the output cycle. In gate-level simulation the
+        # decoded outputs can settle after the rising edge's unit-delay cells.
+        await FallingEdge(dut.clk)
         observed_byte = int(dut.uo_out.value)
         done = int(dut.uio_out.value) & 1
         done_oe = int(dut.uio_oe.value) & 1
@@ -123,5 +125,5 @@ async def test_project(dut):
     )
 
     await tick(dut, 0x00, 0x00)
-    await Timer(1, unit="ns")
+    await FallingEdge(dut.clk)
     assert (int(dut.uio_out.value) & 1) == 0, "done did not clear after output"
