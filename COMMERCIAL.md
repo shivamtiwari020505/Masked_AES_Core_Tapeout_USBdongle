@@ -40,6 +40,9 @@ empirical or production side-channel-resistance claim is made.
 
 ## Contact
 
-For commercial licensing, open a
-[GitHub Issue](https://github.com/shivamtiwari020505/Masked_AES_Core_Tapeout_USBdongle/issues)
-or email [your-email@example.com](mailto:your-email@example.com).
+To contact [Shivam Tiwari](https://github.com/shivamtiwari020505) about
+commercial licensing, open a
+[commercial licensing enquiry](https://github.com/shivamtiwari020505/Masked_AES_Core_Tapeout_USBdongle/issues/new?title=Commercial%20licensing%20enquiry).
+GitHub issues are public, so do not include confidential technical or
+commercial information. A private channel can be arranged after the initial
+enquiry.
