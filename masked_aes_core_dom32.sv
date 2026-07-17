@@ -16,10 +16,11 @@
 // for one cycle when ciphertext_out = final_state0 ^ final_state1 is valid.
 //
 // Security note:
-//   This is an RTL-level first-order masking structure. A production claim also
-//   requires a verified randomness source, no randomness reuse, synthesis and
-//   layout constraints that preserve domain separation, and leakage validation
-//   such as fixed-vs-random/non-specific TVLA on the post-layout implementation.
+//   This is a functional two-share experiment, not an established first-order
+//   secure implementation. Its masked_sbox_dom32 dependency uses a combinational
+//   randomized gadget without a probing/glitch proof. A production replacement
+//   requires a defined security model, reviewed gadget and register structure,
+//   verified randomness, implementation controls, and measured leakage evidence.
 //------------------------------------------------------------------------------
 
 `timescale 1ns/1ps

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate AES-128 known-answer vectors for aes_core.sv.
+"""Generate AES-128 functional vectors, including published KATs, for aes_core.sv.
 
 The output file uses whitespace-separated 128-bit hex words:
 
@@ -11,7 +11,8 @@ contains three ordinary hex tokens.
 
 from __future__ import annotations
 
-import secrets
+import argparse
+import random
 from pathlib import Path
 
 try:
@@ -24,7 +25,8 @@ except ImportError as exc:
     ) from exc
 
 
-OUT_FILE = Path("vectors.txt")
+DEFAULT_OUT_FILE = Path("vectors.txt")
+DEFAULT_SEED = 20260717
 NUM_RANDOM_VECTORS = 10
 
 
@@ -107,7 +109,33 @@ def computed_vector(name: str, key: bytes, plaintext: bytes):
     return name, key, plaintext, aes128_encrypt(key, plaintext)
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Generate a reproducible AES-128 functional test corpus."
+    )
+    parser.add_argument(
+        "--seed",
+        type=lambda value: int(value, 0),
+        default=DEFAULT_SEED,
+        help="deterministic PRNG seed for computed test vectors (default: %(default)s)",
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=DEFAULT_OUT_FILE,
+        help="output vector file (default: %(default)s)",
+    )
+    return parser.parse_args()
+
+
+def test_bytes(rng: random.Random) -> bytes:
+    """Return deterministic test data; this is not security randomness."""
+    return rng.getrandbits(128).to_bytes(16, byteorder="big")
+
+
 def main() -> None:
+    args = parse_args()
+    rng = random.Random(args.seed)
     vectors = list(FIXED_OFFICIAL_VECTORS)
 
     vectors.extend(
@@ -116,18 +144,21 @@ def main() -> None:
     )
 
     for idx in range(NUM_RANDOM_VECTORS):
-        key = secrets.token_bytes(16)
-        plaintext = secrets.token_bytes(16)
+        key = test_bytes(rng)
+        plaintext = test_bytes(rng)
         vectors.append(computed_vector(f"random {idx}", key, plaintext))
 
     if len(vectors) != 20:
         raise RuntimeError(f"expected 20 vectors, generated {len(vectors)}")
 
-    with OUT_FILE.open("w", encoding="ascii") as fout:
+    with args.output.open("w", encoding="ascii", newline="\n") as fout:
         for _, key, plaintext, ciphertext in vectors:
             fout.write(f"{key.hex()} {plaintext.hex()} {ciphertext.hex()}\n")
 
-    print(f"Wrote {len(vectors)} AES-128 vectors to {OUT_FILE}")
+    print(
+        f"Wrote {len(vectors)} AES-128 vectors to {args.output} "
+        f"with deterministic seed {args.seed}"
+    )
 
 
 if __name__ == "__main__":

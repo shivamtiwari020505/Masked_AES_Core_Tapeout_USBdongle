@@ -9,6 +9,10 @@ This project has an open-source release and is also intended to support
 separately negotiated commercial releases. Clean ownership is therefore a
 release requirement.
 
+Known antecedents and unresolved diligence items are tracked in
+[SOURCE_PROVENANCE.md](SOURCE_PROVENANCE.md). A contribution must update that
+record when it introduces or derives from external technical material.
+
 Do not submit code copied from another project, employer-owned work, generated
 netlists, foundry material, PDK content, or anything you are not authorized to
 license.

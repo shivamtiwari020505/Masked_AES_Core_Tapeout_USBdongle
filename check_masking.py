@@ -79,7 +79,10 @@ def main() -> int:
             print("First fail line:", fail_lines[0], file=sys.stderr)
         return 1
 
-    print("Masking verified: output is mask-independent")
+    print(
+        "Functional recombination regression passed: "
+        f"{EXPECTED_TOTAL} tested mask trials matched the expected ciphertext"
+    )
     return 0
 
 

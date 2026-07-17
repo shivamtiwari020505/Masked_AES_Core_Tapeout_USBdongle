@@ -3,37 +3,39 @@
 //
 // 2-share Boolean masked AES S-box, one-cycle registered output.
 //
-// Scheme used:
-//   This module uses a DOM-style Boolean masking implementation of the AES S-box
-//   Boolean network. XOR and affine operations are evaluated independently on
-//   each share. Each non-linear AND in the S-box network is replaced by a
-//   2-share randomized DOM AND:
+// Boolean-network origin:
+//   The y/t/z straight-line equations are adapted from the Boyar-Peralta
+//   depth-16 AES S-box circuit:
+//   https://www.nist.gov/publications/depth-16-circuit-aes-s-box
+//   This is technical attribution, not a determination of reuse rights. See
+//   SOURCE_PROVENANCE.md before including this network in a commercial release.
+//
+// Masking construction:
+//   XOR and affine operations are evaluated independently on each share. Each
+//   non-linear AND in the Boolean network is replaced by this randomized
+//   two-share functional gadget:
 //
 //     c0 = (a0 & b0) ^ r
 //     c1 = (a0 & b1) ^ (a1 & b0) ^ (a1 & b1) ^ r
 //
-//   so that c0 ^ c1 = (a0 ^ a1) & (b0 ^ b1). DOM-style masking is used here
-//   because it maps cleanly onto a Boolean S-box network and makes it explicit
-//   where every non-linear operation consumes randomness. A composite-field
-//   masked S-box is usually smaller, but it is easier to accidentally introduce
-//   an unmasked recombination when writing it from scratch.
+//   so that c0 ^ c1 = (a0 ^ a1) & (b0 ^ b1). This proves functional
+//   recombination only. The cross-products and correction are combinational;
+//   this module is not a reviewed or proven Domain-Oriented Masking gadget.
 //
-// Wires claimed not to carry unmasked SubBytes secrets:
+// RTL representation note:
 //   All internal secret-dependent values are represented as share_t pairs. The
 //   RTL never computes in0 ^ in1, the unmasked S-box input, the unmasked S-box
 //   output, or out0 ^ out1 inside this module. Linear operations are share-wise;
 //   AND operations use share_and(). Therefore, at the RTL signal level, no named
 //   intermediate wire is intentionally assigned the unmasked SubBytes input,
-//   output, or any unmasked non-linear intermediate.
+//   output, or any unmasked non-linear intermediate. That coding property is
+//   not a probing- or glitch-security proof.
 //
-// Randomness requirements:
-//   Strict first-order DOM security for this 32-AND S-box network requires 32
-//   independent fresh random bits per S-box evaluation, and the S-box inputs
-//   must be stable across the clock edge capturing the outputs. rand_in[31:0]
-//   must come from an external TRNG/DRBG or randomness distribution network and
-//   must be fresh for every byte and every SubBytes/key-schedule S-box
-//   evaluation. Reusing rand_in across bytes, rounds, encryptions, or key
-//   expansion SubWord operations invalidates the DOM security assumption.
+// Randomness interface:
+//   rand_in exposes one bit for each of the 32 non-linear operations. Functional
+//   tests vary that bus, but neither its width nor freshness establishes masking
+//   security. A future reviewed construction must define its entropy contract
+//   and forbid reuse across bytes, rounds, encryptions, and key expansion.
 //------------------------------------------------------------------------------
 
 `timescale 1ns/1ps

@@ -21,6 +21,12 @@ These results show functional correctness for the tested cases. They do not
 show resistance to power, electromagnetic, timing, fault, probing, or
 higher-order attacks.
 
+The GitHub `test` workflow now regenerates the 20-vector corpus from a fixed
+seed and runs the unmasked, compatibility-masked, 32-bit-randomness, and Tiny
+Tapeout regressions. Exact vector and log artifacts are retained per workflow
+run. Deterministic generation supports reproducibility; it is not a model for a
+security randomness source.
+
 ## Physical implementation evidence
 
 A previous TT06-compatible GitHub workflow completed GDS hardening, precheck,

@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  tinytapeout_rtl:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repo
@@ -41,7 +41,50 @@ jobs:
         if: success() || failure()
         uses: actions/upload-artifact@v7
         with:
-          name: test-results
+          name: tinytapeout-rtl-test-results
           path: |
             test/results.xml
             test/sim_build/
+
+  candidate_regression:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+
+      - name: Install Icarus Verilog
+        run: sudo apt-get update && sudo apt-get install -y iverilog
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install test dependencies
+        run: pip install -r test/requirements.txt
+
+      - name: Generate deterministic test corpus
+        run: |
+          python gen_vectors.py --seed 20260717
+          sha256sum vectors.txt
+
+      - name: Run candidate functional regression
+        shell: bash
+        run: |
+          set -o pipefail
+          make sim | tee unmasked_run.log
+          make check_masking | tee compatibility_masked_run.log
+          make sim_dom32 | tee dom32_run.log
+
+      - name: Upload candidate regression evidence
+        if: success() || failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: candidate-functional-regression
+          path: |
+            vectors.txt
+            unmasked_run.log
+            compatibility_masked_run.log
+            masked_sim.log
+            dom32_run.log
+            dom32_iverilog.log

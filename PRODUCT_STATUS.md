@@ -11,9 +11,9 @@ process are developed separately.
 
 | Track | Files | Verified evidence | Current limit |
 | --- | --- | --- | --- |
-| Tiny Tapeout proof wrapper | src/masked_sbox.sv and src/masked_aes_round_only.sv | FIPS-197 functional KAT; prior SKY130A GDS, precheck, gate-level test, and viewer jobs passed | Eight external randomness bits are expanded internally; this is not sufficient for a production masking claim |
-| Compatibility masked core | masked_sbox.sv and masked_aes_core.sv | 20 AES vectors, five mask trials per vector | Functional masking demonstrator only |
-| DOM32 candidate | masked_sbox_dom32.sv and masked_aes_core_dom32.sv | All 256 S-box values recombine correctly; AES-128 FIPS KAT passes | No glitch-aware proof, physical signoff, leakage measurement, or silicon result |
+| Tiny Tapeout proof wrapper | `src/masked_sbox.sv` and `src/masked_aes_round_only.sv` | FIPS-197 functional KAT; current SKY130A GDS, precheck, gate-level test, and viewer jobs pass | Eight external randomness bits are expanded internally; this is not sufficient for a production masking claim |
+| Compatibility masked core | `masked_sbox.sv` and `masked_aes_core.sv` | Deterministic 20-vector regression with five mask trials per vector | Functional masking demonstrator only; key schedule is unmasked |
+| 32-bit-randomness candidate | `masked_sbox_dom32.sv` and `masked_aes_core_dom32.sv` | All 256 S-box values recombine correctly; AES-128 FIPS KAT passes | Historical DOM32 name does not establish DOM security; no proof, physical signoff, leakage measurement, or silicon result |
 
 The current Tiny Tapeout configuration targets the TTSKY26c/Sky130A flow. Use
 the workflow result for the exact commit being evaluated; an older successful
@@ -36,10 +36,10 @@ a shuttle, manufactured, or tested in silicon.
 A licensable release needs all of the following before it is represented as
 production-ready:
 
-1. Confirm authorship and provenance for every delivered source file and
-   document any third-party material.
-2. Freeze the product specification: complete AES function, key handling,
-   interfaces, latency, throughput, error behavior, and randomness contract.
+1. Close every action in [SOURCE_PROVENANCE.md](SOURCE_PROVENANCE.md), including
+   commercial clearance or replacement of the Boyar-Peralta-derived network.
+2. Review, approve, and implement the baseline in
+   [COMMERCIAL_PRODUCT_REQUIREMENTS.md](COMMERCIAL_PRODUCT_REQUIREMENTS.md).
 3. Run lint, CDC/reset analysis, broad randomized regression, formal functional
    equivalence, and customer-tool compatibility checks.
 4. Replace the demonstration masking network with an implementation supported

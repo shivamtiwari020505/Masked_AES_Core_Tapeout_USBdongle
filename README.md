@@ -25,7 +25,9 @@ simulation-tested candidate and are not part of the Tiny Tapeout GDS build.
 See [Product Status](PRODUCT_STATUS.md),
 [Validation Status](VALIDATION_STATUS.md), and
 [Masking Implementation Notes](MASKING_IMPLEMENTATION.md) before evaluating
-either implementation.
+either implementation. The proposed sellable boundary is defined separately in
+[Commercial Product Requirements](COMMERCIAL_PRODUCT_REQUIREMENTS.md), while
+[Source Provenance](SOURCE_PROVENANCE.md) records the open diligence gate.
 
 ## GDS and layout
 
@@ -66,13 +68,15 @@ state0 = mask
 state1 = plaintext XOR mask
 ```
 
-The `masked_sbox` module implements a two-share DOM-style Boolean masked S-box.
-XOR and affine operations are applied independently to the two shares. The
-nonlinear S-box operations are evaluated with randomized share-domain AND
-gadgets. For the Tiny Tapeout pin budget, `mask_in[7:0]` is used as the external
-fresh randomness input to the S-box wrapper. This is enough for deterministic
-functional testing, but production side-channel claims require true fresh
-randomness, no reuse across S-box evaluations, and post-layout leakage testing.
+The `masked_sbox` module implements a randomized two-share Boolean S-box using
+Boyar-Peralta straight-line equations. XOR and affine operations are applied
+independently to the two shares. The nonlinear operations use a functional
+cross-share AND construction whose recombination is tested; it has not been
+shown to satisfy Domain-Oriented Masking, probing, or glitch-security
+requirements. For the Tiny Tapeout pin budget, `mask_in[7:0]` is used as the
+external randomness input to the S-box wrapper and expanded internally. This
+is enough for deterministic functional testing, but not for a production
+side-channel claim.
 
 All AES linear operations remain in the share domain. ShiftRows is folded into
 the SubBytes writeback order, MixColumns is computed on shares, and AddRoundKey
@@ -201,6 +205,19 @@ Run the synthesis feasibility check:
 python3 check_synth.py --top tt_um_shivamtiwari020505_masked_aes --rtl src/masked_sbox.sv src/masked_aes_round_only.sv
 ```
 
+Run the root-level functional candidates with the same deterministic corpus
+used in CI:
+
+```sh
+python3 gen_vectors.py --seed 20260717
+make sim
+make check_masking
+make sim_dom32
+```
+
+These commands check functional recombination only. Passing them does not show
+masking security or leakage resistance.
+
 ## External hardware
 
 No external components are required for RTL or gate-level simulation.
@@ -226,6 +243,10 @@ tests listed in [Validation Status](VALIDATION_STATUS.md). It does not yet have
 a glitch-aware or probing-model proof, independent review, post-layout security
 analysis, measured TVLA/CPA result, or silicon evidence. No side-channel
 resistance claim is made for either implementation.
+
+The Boolean equations used by the masked S-boxes follow the published
+Boyar-Peralta AES S-box circuit. Attribution and the unresolved commercial
+clearance action are recorded in [Source Provenance](SOURCE_PROVENANCE.md).
 
 ## Licensing and commercial use
 

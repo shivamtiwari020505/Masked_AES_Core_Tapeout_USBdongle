@@ -11,10 +11,11 @@ randomness interface. The S-box deterministically expands those eight bits into
 provide 32 independent fresh random bits. Use this implementation only as a
 functional demonstrator.
 
-## DOM32 candidate
+## 32-bit-randomness candidate
 
-The files masked_sbox_dom32.sv and masked_aes_core_dom32.sv expose 32 fresh
-random bits per S-box. The key-schedule SubWord is also shared.
+The files `masked_sbox_dom32.sv` and `masked_aes_core_dom32.sv` retain their
+historical DOM32 names and expose 32 randomness input bits per S-box. The
+key-schedule SubWord is also represented as shares.
 
 For each encryption:
 
@@ -23,7 +24,7 @@ For each encryption:
   share;
 - rand_data_sbox supplies 512 fresh bits for every SUB_BYTES state;
 - rand_key_sbox supplies 128 fresh bits for every KEY_SUBWORD state; and
-- the total stated randomness budget is 6,400 bits when key expansion is run
+- the interface consumes 6,400 randomness input bits when key expansion is run
   for every encryption.
 
 The simulation assertions detect all-zero buses and direct bus reuse. They do
@@ -31,11 +32,16 @@ not prove statistical independence or physical security.
 
 ## Security limitation
 
-The DOM-style nonlinear network is combinational between input and output
-registers. It has not been accompanied by a probing-model proof, a glitch-aware
-hardware proof, or an independent review. The name DOM32 describes the intended
-structure and randomness width; it is not a certification of Domain-Oriented
-Masking security.
+The randomized nonlinear network is combinational between input and output
+registers and combines cross-domain products inside one logic cone. It has not
+been accompanied by a probing-model proof, a glitch-aware hardware proof, or an
+independent review. The name DOM32 is historical and describes the input width;
+it must not be interpreted as a conforming Domain-Oriented Masking construction
+or certification.
+
+The underlying `y`/`t`/`z` Boolean equations follow the Boyar-Peralta AES S-box
+circuit. See [SOURCE_PROVENANCE.md](SOURCE_PROVENANCE.md) for attribution and
+the unresolved commercial clearance action.
 
 ## Physical implementation requirements
 
